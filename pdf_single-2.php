@@ -66,6 +66,8 @@
         <button id="next-page-btn">Next Page</button>
         <button id="add-signature-btn">Add Signature</button>
         <button id="signature-sign-btn">Signature Sign</button>
+        <button id="zoom-in-btn">Zoom In</button>
+        <button id="zoom-out-btn">Zoom Out</button>
     </div>
     <canvas id="the-canvas"></canvas>
     <div id="drag">
@@ -80,7 +82,7 @@
         const pdfURL = 'https://sign.logoutwifi.me/assets/pdfs/master_PQDR62J2RP99M16TAN1KTFJRKJJBSN.pdf';
         let pdfDoc = null;
         let currentPage = 1;
-
+        var currentScale = 1.5;
         let signatureX = 0;
         let signatureY = 0;
         let signatureWidth = 0;
@@ -91,8 +93,7 @@
             pdfDoc.getPage(num).then(function (page) {
                 console.log('Page loaded');
 
-                var scale = 1;
-                var viewport = page.getViewport({ scale: scale });
+                var viewport = page.getViewport({ scale: currentScale });
 
                 var canvas = document.getElementById('the-canvas');
                 var context = canvas.getContext('2d');
@@ -134,6 +135,8 @@
                         top: '200px',
                         left: '50%'
                     });
+                    signatureWidth = $('#drag img').width();
+                    signatureHeight = $('#drag img').height();
                 });
 
                 $('#signature-sign-btn').click(function () {
@@ -184,8 +187,9 @@
                 $('#drag').resizable({
                     containment: '#the-canvas',
                     stop: function (event, ui) {
-                        var w = $(this).width();
-                        var h = $(this).height();
+                        var w = $(this).width() / currentScale;
+                        var h = $(this).height() / currentScale;
+
                         console.log('New Width: ' + w);
                         console.log('New Height: ' + h);
 
@@ -201,6 +205,14 @@
                         coordinates(this);
                     }
                 });
+
+                $('#zoom-in-btn').click(function () {
+                    zoomIn();
+                });
+
+                $('#zoom-out-btn').click(function () {
+                    zoomOut();
+                });
             });
         });
 
@@ -208,12 +220,28 @@
             element = $(element);
             var offset = element.offset();
             var canvasOffset = $('#the-canvas').offset();
-            var top = offset.top - canvasOffset.top;
-            var left = offset.left - canvasOffset.left;
+
+            // Calculate the coordinates relative to the canvas
+            var top = (offset.top - canvasOffset.top) / currentScale;
+            var left = (offset.left - canvasOffset.left) / currentScale;
 
             console.log('PDF X: ' + top + ' PDF Y: ' + left);
-            signatureX =  top;
-            signatureY =  left;
+            signatureX = top;
+            signatureY = left;
+        }
+
+        var zoomIn = function () {
+            if (currentScale < 5) {
+                currentScale = Math.min(5, currentScale + 0.5); // Increase scale factor but don't exceed 5
+                renderPage(currentPage); // Re-render the page with the new scale
+            }
+        }
+
+        var zoomOut = function () {
+            if (currentScale > 1) {
+                currentScale = Math.max(1, currentScale - 0.5); // Decrease scale factor but don't go below 1
+                renderPage(currentPage); // Re-render the page with the new scale
+            }
         }
     </script>
 </body>
