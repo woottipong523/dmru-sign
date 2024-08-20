@@ -143,6 +143,10 @@
                     console.log("signatureWidth : " + signatureWidth);
                     console.log("signatureHeight : " + signatureHeight);
                     console.log("signatureData : " + signatureData);
+
+
+                    console.log(currentPage)
+                    return;
                     // Create a form to send the data
                     var form = $('<form>', {
                         'method': 'POST',
